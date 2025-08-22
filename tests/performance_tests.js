@@ -1,74 +1,74 @@
 /**
- * Testes de Performance - BIMCheck
+ * Performance Tests - BIMCheck
  * 
- * Scripts de automação para testes de performance da aplicação
- * Usando k6 para testes de carga e estresse
+ * Automation scripts for application performance testing
+ * Using k6 for load and stress testing
  */
 
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Rate, Trend, Counter } from 'k6/metrics';
 
-// Métricas customizadas
+// Custom metrics
 const errorRate = new Rate('errors');
 const uploadTime = new Trend('upload_time');
 const processingTime = new Trend('processing_time');
 const totalTime = new Trend('total_time');
 const successCounter = new Counter('successful_validations');
 
-// Configurações de teste
+// Test configurations
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000';
 
-// Cenários de teste
+// Test scenarios
 export const options = {
-    // Cenário 1: Teste de carga básica
+    // Scenario 1: Basic load test
     stages: [
-        { duration: '1m', target: 5 },   // Rampa de subida
-        { duration: '3m', target: 5 },   // Carga constante
-        { duration: '1m', target: 0 },   // Rampa de descida
+        { duration: '1m', target: 5 },   // Ramp up
+        { duration: '3m', target: 5 },   // Constant load
+        { duration: '1m', target: 0 },   // Ramp down
     ],
     
-    // Limites globais
+    // Global thresholds
     thresholds: {
-        http_req_duration: ['p(95)<3000'],   // 95% das requisições < 3s
-        http_req_failed: ['rate<0.05'],      // Taxa de erro < 5%
+        http_req_duration: ['p(95)<3000'],   // 95% of requests < 3s
+        http_req_failed: ['rate<0.05'],      // Error rate < 5%
         upload_time: ['p(95)<10000'],        // Upload < 10s
-        processing_time: ['p(95)<30000'],    // Processamento < 30s
-        total_time: ['p(95)<40000'],         // Tempo total < 40s
+        processing_time: ['p(95)<30000'],    // Processing < 30s
+        total_time: ['p(95)<40000'],         // Total time < 40s
     },
 };
 
 /**
- * Função de setup - executada uma vez antes dos testes
+ * Setup function - executed once before tests
  */
 export function setup() {
-    console.log('🚀 Iniciando setup dos testes de performance...');
+    console.log('🚀 Starting performance test setup...');
     
-    // Verifica se a aplicação está acessível
+    // Check if application is accessible
     const healthCheck = http.get(`${BASE_URL}`);
     check(healthCheck, {
         'health check passed': (r) => r.status === 200,
     });
     
     if (healthCheck.status !== 200) {
-        throw new Error(`Aplicação não está acessível em ${BASE_URL}`);
+        throw new Error(`Application not accessible at ${BASE_URL}`);
     }
     
-    console.log('✅ Setup concluído com sucesso');
+    console.log('✅ Setup completed successfully');
     return { baseUrl: BASE_URL };
 }
 
 /**
- * Função principal de teste
+ * Main test function
  */
 export default function(data) {
     const { baseUrl } = data;
     
-    // Simula um usuário fazendo upload e validação de arquivo IFC
+    // Simulates a user uploading and validating an IFC file
     const startTime = Date.now();
     
     try {
-        // 1. Acessa a página inicial
+        // 1. Access the main page
         const pageLoad = http.get(baseUrl);
         check(pageLoad, {
             'page loads successfully': (r) => r.status === 200,
@@ -81,11 +81,11 @@ export default function(data) {
             return;
         }
         
-        // 2. Simula upload de arquivo (mock)
+        // 2. Simulate file upload (mock)
         const uploadStart = Date.now();
         
-        // Simula tempo de upload
-        sleep(0.5); // 500ms para simular upload
+        // Simulate upload time
+        sleep(0.5); // 500ms to simulate upload
         
         const uploadDuration = Date.now() - uploadStart;
         uploadTime.add(uploadDuration);
@@ -94,26 +94,26 @@ export default function(data) {
             'upload time acceptable': () => uploadDuration < 10000,
         });
         
-        // 3. Aguarda processamento
+        // 3. Wait for processing
         const processingStart = Date.now();
         
-        // Simula tempo de processamento
-        sleep(1); // 1 segundo para simular processamento
+        // Simulate processing time
+        sleep(1); // 1 second to simulate processing
         
         const processingEnd = Date.now() - processingStart;
         processingTime.add(processingEnd);
         
-        // 4. Verifica resultados (simulado)
+        // 4. Check results (simulated)
         const resultsResponse = http.get(`${baseUrl}`);
         check(resultsResponse, {
             'results available': (r) => r.status === 200,
         });
         
-        // 5. Calcula tempo total
+        // 5. Calculate total time
         const totalDuration = Date.now() - startTime;
         totalTime.add(totalDuration);
         
-        // 6. Verifica sucesso geral
+        // 6. Check overall success
         const success = check(null, {
             'total time acceptable': () => totalDuration < 40000,
             'all steps completed': () => true,
@@ -125,35 +125,35 @@ export default function(data) {
             errorRate.add(1);
         }
         
-        // Pausa entre requisições
+        // Pause between requests
         sleep(1);
         
     } catch (error) {
-        console.error('Erro durante teste:', error);
+        console.error('Error during test:', error);
         errorRate.add(1);
     }
 }
 
 /**
- * Função de teardown - executada uma vez após os testes
+ * Teardown function - executed once after tests
  */
 export function teardown(data) {
-    console.log('🧹 Finalizando testes de performance...');
-    console.log('✅ Teardown concluído');
+    console.log('🧹 Finalizing performance tests...');
+    console.log('✅ Teardown completed');
 }
 
 /**
- * Teste específico para upload de arquivos grandes
+ * Specific test for large file uploads
  */
 export function testLargeFileUpload() {
     const { baseUrl } = setup();
     
-    console.log('📁 Testando upload de arquivo grande...');
+    console.log('📁 Testing large file upload...');
     
     const startTime = Date.now();
     
-    // Simula upload de arquivo de 50MB
-    sleep(2); // Simula upload grande
+    // Simulate 50MB file upload
+    sleep(2); // Simulate large upload
     
     const uploadTime = Date.now() - startTime;
     
@@ -161,18 +161,18 @@ export function testLargeFileUpload() {
         'large file upload time acceptable': () => uploadTime < 60000, // < 60s
     });
     
-    console.log(`✅ Upload de arquivo grande concluído em ${uploadTime}ms`);
+    console.log(`✅ Large file upload completed in ${uploadTime}ms`);
 }
 
 /**
- * Teste de concorrência
+ * Concurrency test
  */
 export function testConcurrency() {
     const { baseUrl } = setup();
     
-    console.log('👥 Testando concorrência...');
+    console.log('👥 Testing concurrency...');
     
-    // Simula múltiplos usuários
+    // Simulate multiple users
     const concurrentUsers = 5;
     
     for (let i = 0; i < concurrentUsers; i++) {
@@ -182,32 +182,32 @@ export function testConcurrency() {
         });
     }
     
-    console.log(`✅ Teste de concorrência com ${concurrentUsers} usuários concluído`);
+    console.log(`✅ Concurrency test with ${concurrentUsers} users completed`);
 }
 
 /**
- * Teste de memória
+ * Memory usage test
  */
 export function testMemoryUsage() {
-    console.log('🧠 Testando uso de memória...');
+    console.log('🧠 Testing memory usage...');
     
-    // Simula múltiplas validações
+    // Simulate multiple validations
     for (let i = 0; i < 10; i++) {
         sleep(0.1);
     }
     
-    console.log('✅ Teste de memória concluído');
+    console.log('✅ Memory test completed');
 }
 
 /**
- * Teste de timeout
+ * Timeout test
  */
 export function testTimeout() {
     const { baseUrl } = setup();
     
-    console.log('⏰ Testando timeouts...');
+    console.log('⏰ Testing timeouts...');
     
-    // Simula requisição com timeout
+    // Simulate request with timeout
     const timeoutTest = http.get(`${baseUrl}`, {
         timeout: '30s',
     });
@@ -216,17 +216,17 @@ export function testTimeout() {
         'timeout handled gracefully': (r) => r.status === 200,
     });
     
-    console.log('✅ Teste de timeout concluído');
+    console.log('✅ Timeout test completed');
 }
 
 /**
- * Gera relatório de performance
+ * Generate performance report
  */
 export function generatePerformanceReport() {
-    console.log('\n📊 RELATÓRIO DE PERFORMANCE');
+    console.log('\n📊 PERFORMANCE REPORT');
     console.log('============================');
     
-    // Métricas simuladas
+    // Simulated metrics
     const metrics = {
         totalRequests: 1000,
         successfulRequests: 950,
@@ -238,47 +238,47 @@ export function generatePerformanceReport() {
         errorRate: 0.05,
     };
     
-    console.log(`Total de requisições: ${metrics.totalRequests}`);
-    console.log(`Requisições bem-sucedidas: ${metrics.successfulRequests}`);
-    console.log(`Requisições falharam: ${metrics.failedRequests}`);
-    console.log(`Tempo médio de resposta: ${metrics.averageResponseTime}ms`);
-    console.log(`Tempo P95: ${metrics.p95ResponseTime}ms`);
-    console.log(`Tempo P99: ${metrics.p99ResponseTime}ms`);
-    console.log(`Requisições por segundo: ${metrics.requestsPerSecond}`);
-    console.log(`Taxa de erro: ${(metrics.errorRate * 100).toFixed(1)}%`);
+    console.log(`Total requests: ${metrics.totalRequests}`);
+    console.log(`Successful requests: ${metrics.successfulRequests}`);
+    console.log(`Failed requests: ${metrics.failedRequests}`);
+    console.log(`Average response time: ${metrics.averageResponseTime}ms`);
+    console.log(`P95 response time: ${metrics.p95ResponseTime}ms`);
+    console.log(`P99 response time: ${metrics.p99ResponseTime}ms`);
+    console.log(`Requests per second: ${metrics.requestsPerSecond}`);
+    console.log(`Error rate: ${(metrics.errorRate * 100).toFixed(1)}%`);
     
-    // Avaliação de performance
+    // Performance evaluation
     const performanceScore = calculatePerformanceScore(metrics);
-    console.log(`\n🎯 Score de Performance: ${performanceScore}/100`);
+    console.log(`\n🎯 Performance Score: ${performanceScore}/100`);
     
     if (performanceScore >= 90) {
-        console.log('✅ Performance Excelente');
+        console.log('✅ Excellent Performance');
     } else if (performanceScore >= 80) {
-        console.log('✅ Performance Boa');
+        console.log('✅ Good Performance');
     } else if (performanceScore >= 70) {
-        console.log('⚠️ Performance Aceitável');
+        console.log('⚠️ Acceptable Performance');
     } else {
-        console.log('❌ Performance Precisa Melhorar');
+        console.log('❌ Performance Needs Improvement');
     }
 }
 
 /**
- * Calcula score de performance
+ * Calculate performance score
  */
 function calculatePerformanceScore(metrics) {
     let score = 100;
     
-    // Deduz pontos por erros
+    // Deduct points for errors
     score -= metrics.errorRate * 50;
     
-    // Deduz pontos por tempo de resposta alto
+    // Deduct points for high response time
     if (metrics.p95ResponseTime > 5000) {
         score -= 20;
     } else if (metrics.p95ResponseTime > 3000) {
         score -= 10;
     }
     
-    // Deduz pontos por throughput baixo
+    // Deduct points for low throughput
     if (metrics.requestsPerSecond < 5) {
         score -= 15;
     } else if (metrics.requestsPerSecond < 10) {
@@ -288,7 +288,7 @@ function calculatePerformanceScore(metrics) {
     return Math.max(0, Math.min(100, score));
 }
 
-// Executa relatório se chamado diretamente
+// Execute report if called directly
 if (__ENV.GENERATE_REPORT) {
     generatePerformanceReport();
 } 

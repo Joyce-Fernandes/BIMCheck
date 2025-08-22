@@ -196,7 +196,7 @@ async function validateIFCFile(file) {
       issues: [],
       status: 'success'
     };
-  } else if (fileName.includes('problem') || fileName.includes('problemas')) {
+  } else if (fileName.includes('problem') || fileName.includes('problematic')) {
     return {
       totalElements: 18,
       issues: [

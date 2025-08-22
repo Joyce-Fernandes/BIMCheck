@@ -6,18 +6,18 @@ module.exports = defineConfig({
     viewportWidth: 1280,
     viewportHeight: 720,
     
-    // Configurações para captura de screenshots e vídeos
-    video: true, // Habilitar vídeo para captura
+    // Screenshot and video capture settings
+    video: true, // Enable video capture
     screenshotOnRunFailure: true,
-    screenshotOnRunFailureOnly: false, // Capturar screenshots mesmo em sucesso
+    screenshotOnRunFailureOnly: false, // Capture screenshots even on success
     
-    // Timeouts otimizados
+    // Optimized timeouts
     defaultCommandTimeout: 10000,
     requestTimeout: 10000,
     responseTimeout: 10000,
     pageLoadTimeout: 20000,
     
-    // Configurações de pastas
+    // Folder settings
     specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
     supportFile: 'cypress/support/e2e.js',
     fixturesFolder: 'cypress/fixtures',
@@ -25,18 +25,18 @@ module.exports = defineConfig({
     screenshotsFolder: 'cypress/screenshots',
     videosFolder: 'cypress/videos',
     
-    // Configurações de retry otimizadas
+    // Optimized retry settings
     retries: {
       runMode: 1,
       openMode: 0
     },
     
-    // Configurações de performance
+    // Performance settings
     numTestsKeptInMemory: 25,
     experimentalMemoryManagement: true,
     
     setupNodeEvents(on, config) {
-      // Implementar plugins do node aqui
+      // Implement node plugins here
       on('task', {
         log(message) {
           console.log(message);
@@ -46,11 +46,11 @@ module.exports = defineConfig({
     },
     
     env: {
-      // Variáveis de ambiente para testes
+      // Environment variables for tests
       testUser: 'test@bimcheck.com',
       testPassword: 'test123',
       apiUrl: 'http://localhost:3000',
-      // Configurações específicas para BIM
+      // BIM-specific settings
       maxFileSize: 50 * 1024 * 1024, // 50MB
       supportedFormats: ['.ifc', '.IFC'],
       validationTimeout: 30000,

@@ -1,19 +1,19 @@
 // ***********************************************
-// Este arquivo pode ser usado para criar
-// comandos customizados do Cypress
+// This file can be used to create
+// custom Cypress commands
 // ***********************************************
 
-// Comando para aguardar carregamento de elementos
+// Command to wait for element loading
 Cypress.Commands.add('waitForElement', (selector, timeout = 10000) => {
   cy.get(selector, { timeout }).should('be.visible');
 });
 
-// Comando para verificar se elemento não existe
+// Command to check if element doesn't exist
 Cypress.Commands.add('waitForElementNotExist', (selector, timeout = 10000) => {
   cy.get(selector, { timeout }).should('not.exist');
 });
 
-// Comando para fazer upload de arquivo
+// Command to upload file
 Cypress.Commands.add('uploadFile', (fileName, fileType = '') => {
   cy.fixture(fileName).then(fileContent => {
     cy.get('input[type="file"]').attachFile({
@@ -24,43 +24,43 @@ Cypress.Commands.add('uploadFile', (fileName, fileType = '') => {
   });
 });
 
-// Comando para verificar mensagens de erro
+// Command to check error messages
 Cypress.Commands.add('checkErrorMessage', (expectedMessage) => {
   cy.get('.error-message, .alert-danger').should('contain', expectedMessage);
 });
 
-// Comando para verificar mensagens de sucesso
+// Command to check success messages
 Cypress.Commands.add('checkSuccessMessage', (expectedMessage) => {
   cy.get('.success-message, .alert-success').should('contain', expectedMessage);
 });
 
-// Comando para verificar se botão está habilitado
+// Command to check if button is enabled
 Cypress.Commands.add('checkButtonEnabled', (buttonText) => {
   cy.get('button').contains(buttonText).should('not.be.disabled');
 });
 
-// Comando para verificar se botão está desabilitado
+// Command to check if button is disabled
 Cypress.Commands.add('checkButtonDisabled', (buttonText) => {
   cy.get('button').contains(buttonText).should('be.disabled');
 });
 
-// Comando para aguardar carregamento da página
+// Command to wait for page loading
 Cypress.Commands.add('waitForPageLoad', () => {
   cy.get('body').should('be.visible');
   cy.window().its('document').its('readyState').should('eq', 'complete');
 });
 
-// Comando para verificar se arquivo foi baixado
+// Command to check if file was downloaded
 Cypress.Commands.add('checkFileDownload', (fileName) => {
   cy.readFile(`cypress/downloads/${fileName}`).should('exist');
 });
 
-// Comando para limpar downloads
+// Command to clear downloads
 Cypress.Commands.add('clearDownloads', () => {
   cy.task('clearDownloads');
 });
 
-// Comando para verificar console logs
+// Command to check console logs
 Cypress.Commands.add('checkConsoleLogs', (expectedLog) => {
   cy.window().then((win) => {
     cy.spy(win.console, 'log').as('consoleLog');
@@ -68,64 +68,64 @@ Cypress.Commands.add('checkConsoleLogs', (expectedLog) => {
   });
 });
 
-// Comando para verificar localStorage
+// Command to check localStorage
 Cypress.Commands.add('checkLocalStorage', (key, expectedValue) => {
   cy.window().then((win) => {
     expect(win.localStorage.getItem(key)).to.eq(expectedValue);
   });
 });
 
-// Comando para simular teclas
+// Command to simulate typing
 Cypress.Commands.add('typeWithDelay', (selector, text, delay = 100) => {
   cy.get(selector).clear().type(text, { delay });
 });
 
-// Comando para verificar atributos de elementos
+// Command to check element attributes
 Cypress.Commands.add('checkElementAttribute', (selector, attribute, expectedValue) => {
   cy.get(selector).should('have.attr', attribute, expectedValue);
 });
 
-// Comando para verificar classes CSS
+// Command to check CSS classes
 Cypress.Commands.add('checkElementClass', (selector, className) => {
   cy.get(selector).should('have.class', className);
 });
 
-// Comando para verificar texto de elementos
+// Command to check element text
 Cypress.Commands.add('checkElementText', (selector, expectedText) => {
   cy.get(selector).should('contain.text', expectedText);
 });
 
-// Comando para verificar contagem de elementos
+// Command to check element count
 Cypress.Commands.add('checkElementCount', (selector, expectedCount) => {
   cy.get(selector).should('have.length', expectedCount);
 });
 
-// Comando para aguardar animações
+// Command to wait for animations
 Cypress.Commands.add('waitForAnimation', (selector) => {
   cy.get(selector).should('not.have.class', 'animating');
 });
 
-// Comando para verificar se elemento está visível
+// Command to check if element is visible
 Cypress.Commands.add('checkElementVisible', (selector) => {
   cy.get(selector).should('be.visible');
 });
 
-// Comando para verificar se elemento está oculto
+// Command to check if element is hidden
 Cypress.Commands.add('checkElementHidden', (selector) => {
   cy.get(selector).should('not.be.visible');
 });
 
-// Comando para verificar se elemento está focado
+// Command to check if element is focused
 Cypress.Commands.add('checkElementFocused', (selector) => {
   cy.get(selector).should('be.focused');
 });
 
-// Comando para verificar se elemento está habilitado
+// Command to check if element is enabled
 Cypress.Commands.add('checkElementEnabled', (selector) => {
   cy.get(selector).should('not.be.disabled');
 });
 
-// Comando para verificar se elemento está desabilitado
+// Command to check if element is disabled
 Cypress.Commands.add('checkElementDisabled', (selector) => {
   cy.get(selector).should('be.disabled');
-});
+}); 

@@ -106,7 +106,7 @@ const server = http.createServer((req, res) => {
                                 return;
                             }
                             
-                            // Lista os arquivos do diretório
+                            // List directory files
                             const fileList = files
                                 .filter(file => !file.startsWith('.'))
                                 .map(file => `<li><a href="${pathname}/${file}">${file}</a></li>`)
@@ -128,20 +128,20 @@ const server = http.createServer((req, res) => {
                         return;
                     }
                     
-                    // Serve o index.html
+                    // Serve index.html
                     filePath = indexPath;
                     serveFile(filePath, res);
                 });
                 return;
             }
             
-            // Serve o arquivo
+            // Serve the file
             serveFile(filePath, res);
         });
     });
 });
 
-// Função para servir arquivos
+// Function to serve files
 function serveFile(filePath, res) {
     fs.readFile(filePath, (err, data) => {
         if (err) {
@@ -158,7 +158,7 @@ function serveFile(filePath, res) {
             return;
         }
         
-        // Determina o tipo MIME
+        // Determine MIME type
         const ext = path.extname(filePath).toLowerCase();
         const contentType = mimeTypes[ext] || 'application/octet-stream';
         
@@ -181,7 +181,7 @@ server.listen(PORT, () => {
     console.log(`\n💡 To stop the server, press Ctrl+C`);
 });
 
-// Tratamento de erros
+// Error handling
 server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
         console.error(`❌ Port ${PORT} is already in use. Try a different port.`);
@@ -190,7 +190,7 @@ server.on('error', (err) => {
     }
 });
 
-// Tratamento de interrupção
+// Interruption handling
 process.on('SIGINT', () => {
     console.log('\n👋 Server stopped. Goodbye!');
     process.exit(0);

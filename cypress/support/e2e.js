@@ -1,22 +1,22 @@
 // ***********************************************************
-// Este arquivo pode ser usado para carregar
-// comandos customizados e plugins do Cypress
+// This file can be used to load
+// custom commands and Cypress plugins
 // ***********************************************************
 
-// Importar comandos.js usando ES2015 syntax:
+// Import commands.js using ES2015 syntax:
 import './commands';
 
-// Alternativamente, você pode usar CommonJS syntax:
+// Alternatively, you can use CommonJS syntax:
 // require('./commands')
 
-// Configurações globais do Cypress
+// Global Cypress settings
 Cypress.on('uncaught:exception', (err, runnable) => {
-  // Retorna false para evitar que o Cypress falhe no teste
-  // quando há exceções não capturadas
+  // Returns false to prevent Cypress from failing the test
+  // when there are uncaught exceptions
   return false;
 });
 
-// Configuração para lidar com uploads de arquivo
+// Configuration for handling file uploads
 Cypress.Commands.add('uploadFile', (fileName, fileType = '') => {
   cy.fixture(fileName).then(fileContent => {
     cy.get('input[type="file"]').attachFile({
@@ -27,42 +27,42 @@ Cypress.Commands.add('uploadFile', (fileName, fileType = '') => {
   });
 });
 
-// Comando para aguardar carregamento da aplicação
+// Command to wait for application loading
 Cypress.Commands.add('waitForAppLoad', () => {
   cy.get('#uploadSection', { timeout: 10000 }).should('be.visible');
 });
 
-// Comando para verificar se a aplicação está funcionando
+// Command to check if application is working
 Cypress.Commands.add('checkAppHealth', () => {
   cy.visit('/');
   cy.get('h1').should('contain', 'BIMCheck');
   cy.get('#uploadSection').should('be.visible');
 });
 
-// Comando para simular upload de arquivo IFC
+// Command to simulate IFC file upload
 Cypress.Commands.add('uploadIFCFile', (fileName = 'sample.ifc') => {
   cy.get('input[type="file"]').selectFile(`cypress/fixtures/${fileName}`, { force: true });
 });
 
-// Comando para aguardar processamento do arquivo
+// Command to wait for file processing
 Cypress.Commands.add('waitForProcessing', () => {
   cy.get('#progressSection', { timeout: 30000 }).should('not.be.visible');
   cy.get('#resultsSection').should('be.visible');
 });
 
-// Comando para verificar resultados da validação
+// Command to check validation results
 Cypress.Commands.add('checkValidationResults', () => {
   cy.get('#resultsSection').should('be.visible');
   cy.get('#totalElements').should('be.visible');
 });
 
-// Comando para exportar relatório
+// Command to export report
 Cypress.Commands.add('exportReport', () => {
-  cy.get('button').contains('Exportar Relatório Excel').click();
-  cy.wait(2000); // Aguarda download
+  cy.get('button').contains('Export Excel Report').click();
+  cy.wait(2000); // Wait for download
 });
 
-// Comando para verificar design responsivo
+// Command to check responsive design
 Cypress.Commands.add('checkResponsiveDesign', () => {
   // Desktop
   cy.viewport(1920, 1080);
@@ -75,4 +75,4 @@ Cypress.Commands.add('checkResponsiveDesign', () => {
   // Mobile
   cy.viewport(375, 667);
   cy.get('.container').should('be.visible');
-});
+}); 

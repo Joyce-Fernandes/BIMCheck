@@ -1,9 +1,9 @@
 /**
- * Setup para testes Jest - BIMCheck
- * Configurações globais para execução de testes
+ * Jest Test Setup - BIMCheck
+ * Global configurations for test execution
  */
 
-// Mock do console para evitar logs durante testes
+// Mock console to avoid logs during tests
 global.console = {
     ...console,
     log: jest.fn(),
@@ -13,7 +13,7 @@ global.console = {
     error: jest.fn(),
 };
 
-// Mock do localStorage
+// Mock localStorage
 const localStorageMock = {
     getItem: jest.fn(),
     setItem: jest.fn(),
@@ -22,7 +22,7 @@ const localStorageMock = {
 };
 global.localStorage = localStorageMock;
 
-// Mock do sessionStorage
+// Mock sessionStorage
 const sessionStorageMock = {
     getItem: jest.fn(),
     setItem: jest.fn(),
@@ -31,7 +31,7 @@ const sessionStorageMock = {
 };
 global.sessionStorage = sessionStorageMock;
 
-// Mock do File API
+// Mock File API
 global.File = class File {
     constructor(bits, name, options = {}) {
         this.name = name;
@@ -68,7 +68,7 @@ global.FileReader = class FileReader {
     }
 };
 
-// Mock do Blob
+// Mock Blob
 global.Blob = class Blob {
     constructor(content, options = {}) {
         this.size = content.length;
@@ -76,17 +76,17 @@ global.Blob = class Blob {
     }
 };
 
-// Mock do URL.createObjectURL
+// Mock URL.createObjectURL
 global.URL = {
     ...global.URL,
     createObjectURL: jest.fn(() => 'mock-url'),
     revokeObjectURL: jest.fn(),
 };
 
-// Mock do fetch
+// Mock fetch
 global.fetch = jest.fn();
 
-// Mock do IfcAPI
+// Mock IfcAPI
 global.IfcAPI = class IfcAPI {
     constructor() {
         this.initialized = false;
@@ -143,7 +143,7 @@ global.IfcAPI = class IfcAPI {
     }
 };
 
-// Mock do Three.js
+// Mock Three.js
 global.THREE = {
     Scene: class Scene {
         constructor() {
@@ -181,7 +181,7 @@ global.THREE = {
     },
 };
 
-// Mock do IFCLoader
+// Mock IFCLoader
 global.IFCLoader = class IFCLoader {
     constructor() {
         this.ifcApi = new global.IfcAPI();
@@ -193,13 +193,13 @@ global.IFCLoader = class IFCLoader {
     }
 };
 
-// Configuração de timeout para testes
+// Test timeout configuration
 jest.setTimeout(30000);
 
-// Configuração de ambiente
+// Environment configuration
 process.env.NODE_ENV = 'test';
 
-// Função utilitária para limpar mocks
+// Utility function to clear mocks
 global.clearMocks = () => {
     jest.clearAllMocks();
     localStorageMock.getItem.mockClear();
@@ -215,7 +215,7 @@ global.clearMocks = () => {
     global.URL.revokeObjectURL.mockClear();
 };
 
-// Função utilitária para simular arquivo IFC
+// Utility function to simulate IFC file
 global.createMockIFCFile = (name = 'test.ifc', size = 1024) => {
     const content = `ISO-10303-21;
 HEADER;
@@ -239,7 +239,7 @@ END-ISO-10303-21;`;
     });
 };
 
-// Função utilitária para simular evento de upload
+// Utility function to simulate file upload event
 global.simulateFileUpload = (file) => {
     const event = {
         target: {
@@ -251,7 +251,7 @@ global.simulateFileUpload = (file) => {
     return event;
 };
 
-// Função utilitária para simular drag and drop
+// Utility function to simulate drag and drop
 global.simulateDragAndDrop = (files) => {
     const event = {
         dataTransfer: {
@@ -263,7 +263,7 @@ global.simulateDragAndDrop = (files) => {
     return event;
 };
 
-// Configuração de matchers customizados
+// Custom matchers configuration
 expect.extend({
     toBeValidIFCFile(received) {
         const pass = received instanceof File && 
@@ -304,7 +304,7 @@ expect.extend({
     },
 });
 
-// Configuração de ambiente DOM
+// DOM environment configuration
 if (typeof document === 'undefined') {
     const { JSDOM } = require('jsdom');
     const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
@@ -324,4 +324,4 @@ if (typeof document === 'undefined') {
     global.DragEvent = dom.window.DragEvent;
 }
 
-console.log('✅ Setup de testes configurado com sucesso'); 
+console.log('✅ Test setup configured successfully'); 
