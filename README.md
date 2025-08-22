@@ -15,10 +15,10 @@ BIMCheck is a web application for validating IFC (Industry Foundation Classes) f
 ✅ **Version 1.0.0 - Complete**
 - 100% of functional requirements implemented
 - 36/36 automated tests passing
-- Complete technical documentation
 - Modern responsive interface
 - Functional advanced dashboard
 - Example files with individual data
+- Clean project structure
 
 ## 🚀 Features
 
@@ -48,28 +48,11 @@ BIMCheck is a web application for validating IFC (Industry Foundation Classes) f
 ### Infrastructure
 - **Node.js**: Local server
 - **Git**: Version control
-- **Markdown**: Technical documentation
 
 ## 📁 Project Structure
 
 ```
 BIMCheck/
-├── docs/                        # Technical documentation
-│   ├── README.md               # Documentation guide
-│   ├── requirements.md         # Functional and non-functional requirements
-│   ├── test_plan.md            # Test plan
-│   ├── test_cases.md           # Test cases
-│   ├── automation_strategy.md  # Automation strategy
-│   ├── defects_bimcheck.md     # Defect log
-│   ├── test_policy.md          # Test policy
-│   ├── test_case_template.md   # Test case template
-│   ├── test_heuristics.md      # Test heuristics
-│   ├── test_plan_strategy.md   # Test plan and strategy
-│   ├── automated_tests.md      # Automated tests documentation
-│   ├── system_architecture.md  # System architecture
-│   ├── business_rules.md       # Business rules
-│   ├── user_stories.md         # User stories
-│   └── session_report.md       # Session reports
 ├── src/                        # Application source code
 │   ├── index.html              # Main page
 │   ├── dashboard.html          # Advanced dashboard
@@ -92,6 +75,7 @@ BIMCheck/
 │   ├── fixtures/               # Test files (sample.ifc, invalid.txt, corrupted.ifc)
 │   ├── screenshots/            # Automatic screenshots
 │   └── videos/                 # Automatic videos
+├── scripts/                    # Utility scripts
 ├── server.js                   # Local HTTP server
 ├── cypress.config.js           # Cypress configuration
 ├── k6.exe                      # k6 executable for performance tests
@@ -175,40 +159,20 @@ npm run format              # Format code (Prettier)
 - Screenshots: `cypress/screenshots/`
 - Videos: `cypress/videos/`
 
-## 📚 Documentation
 
-Technical documentation is in the `docs/` folder:
-
-- [Requirements](./docs/requirements.md)
-- [Test Plan](./docs/test_plan.md)
-- [Test Cases](./docs/test_cases.md)
-- [Automation Strategy](./docs/automation_strategy.md)
-- [Defect Log](./docs/defects_bimcheck.md)
-- [Test Policy](./docs/test_policy.md)
-- [Test Case Template](./docs/test_case_template.md)
-- [Test Heuristics](./docs/test_heuristics.md)
-- [Test Plan and Strategy](./docs/test_plan_strategy.md)
-- [Automated Tests](./docs/automated_tests.md)
-- [System Architecture](./docs/system_architecture.md)
-- [Business Rules](./docs/business_rules.md)
-- [User Stories](./docs/user_stories.md)
-- [Session Reports](./docs/session_report.md)
-- [Documentation Guide](./docs/README.md)
 
 ## 🛠️ Development
 
 ### Development Structure
 - **Clean Code**: ESLint and Prettier standards
 - **Automated Tests**: 100% coverage of critical functionalities
-- **Documentation**: Updated and organized
 - **Versioning**: Git with semantic commits
 
 ### Workflow
 1. Develop functionality
 2. Run tests (`npm run test:e2e:all`)
 3. Check quality (`npm run lint`)
-4. Update documentation
-5. Commit and push
+4. Commit and push
 
 ## 🤝 Contribution
 
