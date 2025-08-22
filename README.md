@@ -6,6 +6,8 @@
 [![Cypress](https://img.shields.io/badge/Cypress-14.5.4-brightgreen.svg)](https://www.cypress.io/)
 [![Jest](https://img.shields.io/badge/Jest-29.7.0-yellow.svg)](https://jestjs.io/)
 
+🌐 https://bimcheck.netlify.app/
+
 ## 📋 Description
 
 BIMCheck is a web application for validating IFC (Industry Foundation Classes) files in BIM (Building Information Modeling) projects. The application imports IFC files, validates mandatory parameters, and generates non-conformity reports in Excel, in addition to offering an advanced dashboard for analysis.
