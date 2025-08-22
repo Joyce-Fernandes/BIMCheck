@@ -86,6 +86,7 @@ BIMCheck/
 ├── k6.exe                      # k6 executable for performance tests
 ├── package.json                # Scripts and dependencies
 ├── start-server.bat            # Startup script (Windows)
+├── netlify.toml                # Netlify deployment configuration
 ├── .gitignore                  # Git ignore rules
 └── README.md                   # This file
 ```
@@ -110,7 +111,7 @@ BIMCheck/
 - **Browser**: Chrome, Firefox, Safari or Edge
 - **System**: Windows, macOS or Linux
 
-### Installation
+### Local Installation
 
 1. Clone the repository:
 ```bash
@@ -132,6 +133,33 @@ npm start
 
 ### Quick Method (Windows)
 - Double-click `start-server.bat`
+
+## 🌐 Online Deployment
+
+### Netlify (Recommended - Easy Setup)
+1. **Connect to GitHub:**
+   - Go to [netlify.com](https://netlify.com)
+   - Click "New site from Git"
+   - Choose GitHub and authorize
+
+2. **Select Repository:**
+   - Find and select `Joyce-Fernandes/BIMCheck`
+   - Click "Deploy site"
+
+3. **Configure Build Settings:**
+   - Build command: `npm run test:e2e:all`
+   - Publish directory: `src`
+   - Click "Deploy site"
+
+4. **Your site will be available at:** `https://your-app-name.netlify.app`
+
+### Custom Domain (Optional)
+- Go to Site settings > Domain management
+- Add your custom domain
+- Configure DNS settings
+
+### Detailed Guide
+For step-by-step instructions, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
 
 ### How to Use
 1. Select an `.ifc` file or use the example files
