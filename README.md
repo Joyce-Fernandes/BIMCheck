@@ -147,7 +147,7 @@ npm start
    - Click "Deploy site"
 
 3. **Configure Build Settings:**
-   - Build command: `npm run test:e2e:all`
+   - Build command: `npm install`
    - Publish directory: `src`
    - Click "Deploy site"
 

@@ -26,7 +26,7 @@ This guide will help you deploy the BIMCheck application to Netlify in just a fe
 ### Step 4: Configure Build Settings
 **Important:** Before clicking "Deploy site", configure these settings:
 
-- **Build command:** `npm run test:e2e:all`
+- **Build command:** `npm install`
 - **Publish directory:** `src`
 - **Node version:** `18` (auto-detected)
 
@@ -38,9 +38,9 @@ This guide will help you deploy the BIMCheck application to Netlify in just a fe
 ## 🔧 Configuration Details
 
 ### Build Process
-- **Tests run automatically** before deployment
-- **Only deploys if tests pass** (36/36 tests)
+- **Dependencies installed** automatically
 - **Static files served** from `src/` directory
+- **Fast deployment** without test execution
 
 ### Automatic Deployments
 - **Every push to main branch** triggers new deployment
@@ -65,8 +65,8 @@ Value: your-app-name.netlify.app
 ## 📊 Monitoring
 
 ### Build Status
-- ✅ **Green:** All tests passed, deployment successful
-- ❌ **Red:** Tests failed, deployment blocked
+- ✅ **Green:** Dependencies installed, deployment successful
+- ❌ **Red:** Build failed, check logs
 - 🟡 **Yellow:** Build in progress
 
 ### Performance
@@ -78,7 +78,7 @@ Value: your-app-name.netlify.app
 ### Common Issues
 
 **Build Fails:**
-- Check if all tests are passing locally
+- Check if `package.json` is valid
 - Verify Node.js version (18+)
 - Check build logs in Netlify dashboard
 
@@ -87,10 +87,10 @@ Value: your-app-name.netlify.app
 - Check if `index.html` exists in `src/`
 - Review build logs for errors
 
-**Tests Failing:**
-- Run `npm run test:e2e:all` locally
-- Check Cypress configuration
-- Verify all dependencies are installed
+**Dependencies Issues:**
+- Run `npm install` locally to test
+- Check if all dependencies are in `package.json`
+- Verify no private packages are required
 
 ### Support
 - **Netlify Docs:** [docs.netlify.com](https://docs.netlify.com)
