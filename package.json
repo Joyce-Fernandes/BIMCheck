@@ -1,7 +1,7 @@
 {
   "name": "bimcheck",
   "version": "1.0.0",
-  "description": "Validador de arquivos IFC para projetos BIM",
+  "description": "IFC file validator for BIM projects",
   "main": "src/index.html",
   "scripts": {
     "start": "node server.js",
@@ -20,18 +20,7 @@
     "lint:fix": "eslint src/**/*.js --fix",
     "format": "prettier --write src/**/*.{js,css,html}",
     "build": "echo 'Build completed'",
-    "deploy": "echo 'Deploy completed'",
-    "docs": "echo 'Documentation generated'",
-    "generate:defects": "echo 'Documento de defeitos disponível em docs/defeitos_bimcheck.md'",
-    "generate:policy": "echo 'Política de testes disponível em docs/politica_testes.md'",
-    "generate:testcase": "echo 'Template de casos de teste disponível em docs/template_caso_teste.md'",
-    "generate:heuristics": "echo 'Heurísticas de teste disponíveis em docs/heuristicas_teste.md'",
-    "generate:plan": "echo 'Plano e estratégia de testes disponível em docs/plano_estrategia_testes.md'",
-    "generate:automation": "echo 'Testes automatizados documentados em docs/testes_automatizados.md'",
-    "generate:architecture": "echo 'Arquitetura do sistema documentada em docs/arquitetura_sistema.md'",
-    "generate:business": "echo 'Regras de negócio documentadas em docs/regras_negocio.md'",
-    "generate:stories": "echo 'User stories documentadas em docs/user_stories.md'",
-    "generate:sessions": "echo 'Relatórios de sessão documentados em docs/relatorio_sessao.md'"
+    "deploy": "echo 'Deploy completed'"
   },
   "keywords": [
     "bim",
@@ -47,12 +36,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/seu-usuario/BIMCheck.git"
+    "url": "https://github.com/Joyce-Fernandes/BIMCheck.git"
   },
   "bugs": {
-    "url": "https://github.com/seu-usuario/BIMCheck/issues"
+    "url": "https://github.com/Joyce-Fernandes/BIMCheck/issues"
   },
-  "homepage": "https://github.com/seu-usuario/BIMCheck#readme",
+  "homepage": "https://github.com/Joyce-Fernandes/BIMCheck#readme",
   "devDependencies": {
     "@babel/core": "^7.23.0",
     "@babel/preset-env": "^7.23.0",
