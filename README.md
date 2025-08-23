@@ -16,7 +16,7 @@ BIMCheck is a web application for validating IFC (Industry Foundation Classes) f
 
 ## 📚 Project Documentation
 
-All BIMCheck documentation is organized in the repository's Wiki:
+All BIMCheck documentation is organized in the repository's Wiki: https://github.com/Joyce-Fernandes/BIMCheck/wiki
 
 ## 🎯 Project Status
 
