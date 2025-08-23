@@ -6,7 +6,9 @@
 [![Cypress](https://img.shields.io/badge/Cypress-14.5.4-brightgreen.svg)](https://www.cypress.io/)
 [![Jest](https://img.shields.io/badge/Jest-29.7.0-yellow.svg)](https://jestjs.io/)
 
-🌐 https://bimcheck.netlify.app/
+🚀 **Live Demo:** [https://bimcheck.netlify.app/](https://bimcheck.netlify.app/)
+
+<img width="480" height="800" alt="file-validation-results" src="https://github.com/user-attachments/assets/4986f4d3-c20c-4035-91ce-82eec2bf27fb" />
 
 ## 📋 Description
 
