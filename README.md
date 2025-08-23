@@ -14,6 +14,10 @@
 
 BIMCheck is a web application for validating IFC (Industry Foundation Classes) files in BIM (Building Information Modeling) projects. The application imports IFC files, validates mandatory parameters, and generates non-conformity reports in Excel, in addition to offering an advanced dashboard for analysis.
 
+## 📚 Project Documentation
+
+All BIMCheck documentation is organized in the repository's Wiki:
+
 ## 🎯 Project Status
 
 ✅ **Version 1.0.0 - Complete**
