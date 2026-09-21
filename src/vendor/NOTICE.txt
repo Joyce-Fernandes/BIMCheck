@@ -1,0 +1,4 @@
+web-ifc 0.0.44 — That Open Company / IFC.js contributors.
+Source: https://github.com/ThatOpen/engine_web-ifc
+License: MPL-2.0. Unmodified web-ifc-api.js and web-ifc.wasm from npm package web-ifc@0.0.44.
+License text: https://www.mozilla.org/en-US/MPL/2.0/

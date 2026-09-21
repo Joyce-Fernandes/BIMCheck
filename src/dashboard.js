@@ -1,529 +1,90 @@
-/**
- * Advanced Dashboard - BIMCheck
- * Data analysis and visualization features
- */
-
-// Dashboard data - loaded dynamically
-let dashboardData = {
-  totalElements: 0,
-  conformityRate: 0,
-  totalProblems: 0,
-  processingTime: 0,
-  problemsByCategory: {
-    'Material': 0,
-    'Dimensions': 0,
-    'Standard Code': 0
-  },
-  elementsByCategory: {
-    'Walls': 0,
-    'Doors': 0,
-    'Windows': 0,
-    'Floors': 0,
-    'Ceiling': 0,
-    'Structure': 0
-  },
-  recentValidations: [],
-  validationHistory: []
-};
-
-// Global variables for charts
-let problemsChart = null;
-let elementsChart = null;
-let currentProblemsChartView = 'pie';
-let currentElementsChartView = 'doughnut';
-
-// Dashboard initialization
-document.addEventListener('DOMContentLoaded', function() {
-  initializeDashboard();
-  loadCharts();
-  loadRecentValidations();
-  loadValidationHistory();
-  updateMetrics();
-  
-  // Add event listeners for analysis filters
-  const conformityFilter = document.getElementById('conformityFilter');
-  if (conformityFilter) {
-    conformityFilter.addEventListener('change', filterAnalysis);
-  }
-});
-
-/**
- * Initialize the dashboard
- */
-function initializeDashboard() {
-  console.log('Dashboard initialized');
-  
-  // Load saved data from localStorage
-  loadDashboardData();
-  
-  // Add listeners for interactivity
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'F5') {
-      e.preventDefault();
-      refreshDashboard();
+import {exportBCF} from './bcf.mjs';
+import {readHistory, compareAnalyses} from './comparison.mjs';
+import {readReview} from './reviews.mjs';
+import {exportWorkbook} from './report.mjs';
+import {viewerUrl} from './model-store.mjs';
+const $ = id => document.getElementById(id);
+const number = value => Number(value).toLocaleString('en-GB');
+const labels = {IFCWALL:'Walls',IFCWALLSTANDARDCASE:'Standard walls',IFCWALLELEMENTEDCASE:'Elemented walls',IFCCOVERING:'Coverings',IFCDOOR:'Doors',IFCWINDOW:'Windows',IFCSLAB:'Slabs',IFCBEAM:'Beams',IFCCOLUMN:'Columns',IFCSTAIR:'Stairs',IFCRAILING:'Railings',IFCFLOWSEGMENT:'Flow segments',IFCMEMBER:'Structural members',IFCBUILDINGELEMENTPROXY:'Proxy elements',IFCDISTRIBUTIONELEMENT:'Distribution elements',IFCVIRTUALELEMENT:'Virtual elements',IFCBUILDINGELEMENTPART:'Element parts',IFCBUILDINGSTOREY:'Storeys'};
+try {
+  const r = JSON.parse(localStorage.getItem('bimcheck_real_result') || 'null');
+  if (!r) { $('empty').hidden = false; }
+  else {
+    if (!Array.isArray(r.issues) || !r.elementCounts || !Number.isFinite(r.checkedWalls)) throw new Error('Invalid result');
+    $('content').hidden = false;
+    setupComparison(r);
+    $('export-bcf').disabled=!r.issues.length;
+    $('export-bcf').onclick=async()=>{const b=$('export-bcf');b.disabled=true;try{$('export-feedback').textContent='Preparing BCF…';$('export-feedback').textContent=await exportBCF(r);}catch(e){$('export-feedback').textContent='BCF export failed: '+e.message;}finally{b.disabled=false;}};
+    $('export-review').onclick=()=>{try{exportWorkbook(r,window.XLSX);$('export-feedback').textContent='Report exported with saved review notes.';}catch(error){$('export-feedback').textContent=`Export failed: ${error.message}`;}};
+    $('filename').textContent = r.fileName;
+    $('elements').textContent = number(r.totalElements);
+    $('walls').textContent = number(r.checkedWalls);
+    $('issue-count').textContent = number(r.issues.length);
+    $('time').textContent = `${Number(r.processingTime).toLocaleString('en-GB', {maximumFractionDigits:2})} s`;
+    const affected=new Set(r.issues.map(issue=>issue.id)).size;
+    const passed = Math.max(0, r.checkedWalls-affected);
+    $('passed').textContent = number(passed);
+    $('review').textContent = number(affected);
+    $('wall-fill').style.width = `${r.checkedWalls ? passed/r.checkedWalls*100 : 0}%`;
+    $('wall-bar').hidden = !r.checkedWalls;
+    $('wall-bar').setAttribute('aria-label', `${passed} walls pass selected checks and ${affected} require review`);
+    $('status').textContent = !r.checkedWalls ? 'No walls to check' : r.issues.length ? 'Some walls need attention' : 'Walls pass selected checks';
+    $('wall-summary').textContent = `${number(passed)} of ${number(r.checkedWalls)} walls pass the selected checks. ${r.scope}`;
+    const categories = Object.entries(r.elementCounts).sort((a,b) => b[1]-a[1]);
+    $('category-count').textContent = `${categories.length} ${categories.length === 1 ? 'category' : 'categories'}`;
+    const max = Math.max(1,...categories.map(([,count]) => count));
+    for (const [type,count] of categories) {
+      const row = document.createElement('div');
+      const top = document.createElement('div'); top.className = 'category-top';
+      const name = document.createElement('span'); name.className = 'category-name'; name.textContent = labels[type] || type;
+      if (labels[type]) {const code = document.createElement('small'); code.textContent = type; name.append(code);}
+      const total = document.createElement('strong'); total.textContent = number(count); top.append(name,total);
+      const track = document.createElement('div'); track.className = 'category-track'; track.setAttribute('aria-hidden','true');
+      const fill = document.createElement('div'); fill.className = 'category-fill'; fill.style.width = `${count/max*100}%`; track.append(fill); row.append(top,track); $('categories').append(row);
     }
-  });
+    $('review-count').textContent = `${r.issues.length} ${r.issues.length === 1 ? 'issue' : 'issues'}`;
+    if (!r.issues.length) { $('table-wrap').hidden=true; $('no-issues').hidden=false; $('no-issues').textContent=r.checkedWalls ? 'No issues found by the selected checks.' : 'There are no walls in this file to check.'; }
+    let shown=0;
+    const more=document.createElement('button');more.className='button';more.textContent='Show next 100 findings';$('table-wrap').after(more);
+    function renderFindings() {
+    for (const issue of r.issues.slice(shown,shown+100)) {
+      const row = document.createElement('tr');
+      for (const value of [`#${issue.id}`,issue.element,issue.ruleLabel||'Named material']) {const cell=document.createElement('td');cell.textContent=value;row.append(cell);}
+      const reviewCell=document.createElement('td');
+      const updateStatus=()=>{try{const note=r.analysisId?readReview(r,issue):{status:'Open'};reviewCell.textContent=note.status+(note.assignee?' · '+note.assignee:'');}catch{reviewCell.textContent='Unavailable';}};
+      updateStatus();window.addEventListener('storage',updateStatus);window.addEventListener('pageshow',updateStatus);row.append(reviewCell);
+      const action = document.createElement('td');
+      if (r.viewerAvailable && r.analysisId) {
+        const link = document.createElement('a'); link.className = 'button'; link.textContent = 'View in 3D'; link.href = viewerUrl(r, issue.id, issue.ruleId); action.append(link);
+      } else { action.textContent = 'Run a new analysis to enable 3D'; }
+      row.append(action);
+      $('issues').append(row);
+    }
+    shown+=100;more.hidden=shown>=r.issues.length;
+    }
+    more.onclick=renderFindings;renderFindings();
+  }
+} catch {
+  $('content').hidden = true; $('empty').hidden=false;
+  $('empty').textContent = 'The saved analysis could not be read. Return to the validator and analyse the file again.';
 }
 
-/**
- * Load dashboard data from localStorage
- */
-function loadDashboardData() {
+function setupComparison(current) {
+  const select=document.getElementById('baseline');const output=document.getElementById('comparison-results');
   try {
-    const savedData = localStorage.getItem('bimcheck_dashboard_data');
-    if (savedData) {
-      const parsedData = JSON.parse(savedData);
-      dashboardData = { ...dashboardData, ...parsedData };
-      console.log('Dashboard data loaded:', dashboardData);
-    } else {
-      console.log('No saved data found, using default data');
-      // Create default data for demonstration
-      dashboardData = {
-        totalElements: 150,
-        conformityRate: 85,
-        totalProblems: 12,
-        processingTime: 3.2,
-        problemsByCategory: {
-          'Material': 5,
-          'Dimensions': 4,
-          'Standard Code': 3
-        },
-        elementsByCategory: {
-          'Walls': 45,
-          'Doors': 12,
-          'Windows': 18,
-          'Floors': 25,
-          'Ceiling': 20,
-          'Structure': 30
-        },
-        recentValidations: [
-          {
-            id: 1,
-            date: '2024-01-15 14:30',
-            title: 'Residential Project A',
-            description: 'Validation completed successfully',
-            status: 'success',
-            elements: 150,
-            problems: 5
-          },
-          {
-            id: 2,
-            date: '2024-01-14 16:45',
-            title: 'Commercial Building B',
-            description: 'Some issues found in materials',
-            status: 'warning',
-            elements: 200,
-            problems: 12
-          },
-          {
-            id: 3,
-            date: '2024-01-13 10:20',
-            title: 'Industrial Complex C',
-            description: 'Multiple validation errors detected',
-            status: 'error',
-            elements: 300,
-            problems: 25
-          }
-        ],
-        validationHistory: [
-          {
-            date: '2024-01-15',
-            title: 'Residential Project A',
-            description: '150 elements validated, 5 issues found'
-          },
-          {
-            date: '2024-01-14',
-            title: 'Commercial Building B',
-            description: '200 elements validated, 12 issues found'
-          },
-          {
-            date: '2024-01-13',
-            title: 'Industrial Complex C',
-            description: '300 elements validated, 25 issues found'
-          },
-          {
-            date: '2024-01-12',
-            title: 'Office Building D',
-            description: '180 elements validated, 8 issues found'
-          },
-          {
-            date: '2024-01-11',
-            title: 'Shopping Center E',
-            description: '250 elements validated, 15 issues found'
-          }
-        ]
-      };
-    }
-  } catch (error) {
-    console.error('Error loading dashboard data:', error);
-  }
-}
-
-/**
- * Update metrics display
- */
-function updateMetrics() {
-  document.getElementById('totalElements').textContent = dashboardData.totalElements;
-  document.getElementById('conformityRate').textContent = `${dashboardData.conformityRate}%`;
-  document.getElementById('totalProblems').textContent = dashboardData.totalProblems;
-  document.getElementById('processingTime').textContent = `${dashboardData.processingTime}s`;
-  
-  // Update analysis section
-  updateAnalysisSection();
-}
-
-/**
- * Load and initialize charts
- */
-function loadCharts() {
-  loadProblemsChart();
-  loadElementsChart();
-}
-
-/**
- * Load problems distribution chart
- */
-function loadProblemsChart() {
-  const ctx = document.getElementById('problemsChart').getContext('2d');
-  
-  const data = {
-    labels: Object.keys(dashboardData.problemsByCategory),
-    datasets: [{
-      data: Object.values(dashboardData.problemsByCategory),
-      backgroundColor: [
-        '#FF6384',
-        '#36A2EB',
-        '#FFCE56',
-        '#4BC0C0',
-        '#9966FF',
-        '#FF9F40'
-      ],
-      borderWidth: 2,
-      borderColor: '#fff'
-    }]
-  };
-
-  const config = {
-    type: currentProblemsChartView,
-    data: data,
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            padding: 20,
-            usePointStyle: true
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const label = context.label || '';
-              const value = context.parsed;
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-              return `${label}: ${value} (${percentage}%)`;
-            }
-          }
+    const history=readHistory().filter(r=>r.analysisId!==current.analysisId);
+    for(const prior of history) {const option=document.createElement('option');option.value=prior.analysisId;option.textContent=`${prior.fileName} · ${prior.analysedAt?new Date(prior.analysedAt).toLocaleString('en-GB'):'Earlier analysis'}`;select.append(option);}
+    if(!history.length) output.textContent='Run a second version with the same checks to compare results. Up to 10 analysis summaries are kept on this device.';
+    select.onchange=()=>{
+      output.replaceChildren();if(!select.value)return;
+      try {
+        const before=history.find(r=>r.analysisId===select.value);const diff=compareAnalyses(before,current);
+        const labels={new:'New findings',persisting:'Still present',resolved:'No longer failing',removed:'Removed / ID not found',unmatched:'Cannot match reliably'};
+        for(const [key,label] of Object.entries(labels)) {
+          const section=document.createElement('details');const title=document.createElement('summary');title.textContent=`${label}: ${diff[key].length}`;section.append(title);
+          for(const issue of diff[key]) {const row=document.createElement('p');row.textContent=`${issue.globalId||'No GlobalId'} · ${issue.element} · ${issue.ruleLabel||'Named material'}`;section.append(row);}output.append(section);
         }
-      }
-    }
-  };
-
-  if (problemsChart) {
-    problemsChart.destroy();
-  }
-  
-  problemsChart = new Chart(ctx, config);
+      }catch(error){output.textContent=error.message;}
+    };
+  }catch {output.textContent='Local comparison history is unavailable.';}
 }
-
-/**
- * Load elements distribution chart
- */
-function loadElementsChart() {
-  const ctx = document.getElementById('elementsChart').getContext('2d');
-  
-  const data = {
-    labels: Object.keys(dashboardData.elementsByCategory),
-    datasets: [{
-      data: Object.values(dashboardData.elementsByCategory),
-      backgroundColor: [
-        '#4BC0C0',
-        '#FF6384',
-        '#36A2EB',
-        '#FFCE56',
-        '#9966FF',
-        '#FF9F40'
-      ],
-      borderWidth: 2,
-      borderColor: '#fff'
-    }]
-  };
-
-  const config = {
-    type: currentElementsChartView,
-    data: data,
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            padding: 20,
-            usePointStyle: true
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const label = context.label || '';
-              const value = context.parsed;
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-              return `${label}: ${value} (${percentage}%)`;
-            }
-          }
-        }
-      }
-    }
-  };
-
-  if (elementsChart) {
-    elementsChart.destroy();
-  }
-  
-  elementsChart = new Chart(ctx, config);
-}
-
-/**
- * Toggle chart view (pie/bar)
- */
-function toggleChartView(type) {
-  currentProblemsChartView = type;
-  loadProblemsChart();
-}
-
-/**
- * Toggle element chart view (doughnut/bar)
- */
-function toggleElementChartView(type) {
-  currentElementsChartView = type;
-  loadElementsChart();
-}
-
-/**
- * Load recent validations
- */
-function loadRecentValidations() {
-  const container = document.getElementById('recentValidations');
-  
-  if (!dashboardData.recentValidations || dashboardData.recentValidations.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <i class="fas fa-inbox"></i>
-        <h4>No recent validations</h4>
-        <p>Start validating IFC files to see results here</p>
-      </div>
-    `;
-    return;
-  }
-
-  const validationsHTML = dashboardData.recentValidations.map(validation => `
-    <div class="recent-item">
-      <div class="recent-info">
-        <div class="recent-icon ${validation.status}">
-          <i class="fas ${getStatusIcon(validation.status)}"></i>
-        </div>
-        <div class="recent-details">
-          <h4>${validation.title}</h4>
-          <p>${validation.description}</p>
-        </div>
-      </div>
-      <div class="recent-status ${validation.status}">
-        ${validation.elements} elements, ${validation.problems} issues
-      </div>
-    </div>
-  `).join('');
-
-  container.innerHTML = validationsHTML;
-}
-
-/**
- * Load validation history
- */
-function loadValidationHistory() {
-  const container = document.getElementById('validationTimeline');
-  
-  if (!dashboardData.validationHistory || dashboardData.validationHistory.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <i class="fas fa-history"></i>
-        <h4>No validation history</h4>
-        <p>Validation history will appear here</p>
-      </div>
-    `;
-    return;
-  }
-
-  const timelineHTML = dashboardData.validationHistory.map(item => `
-    <div class="timeline-item">
-      <div class="timeline-date">${item.date}</div>
-      <div class="timeline-title">${item.title}</div>
-      <div class="timeline-description">${item.description}</div>
-    </div>
-  `).join('');
-
-  container.innerHTML = timelineHTML;
-}
-
-/**
- * Get status icon
- */
-function getStatusIcon(status) {
-  const icons = {
-    'success': 'fa-check-circle',
-    'warning': 'fa-exclamation-triangle',
-    'error': 'fa-times-circle',
-    'info': 'fa-info-circle'
-  };
-  return icons[status] || 'fa-info-circle';
-}
-
-/**
- * Refresh dashboard
- */
-function refreshDashboard() {
-  console.log('Refreshing dashboard...');
-  
-  // Reload data
-  loadDashboardData();
-  
-  // Update displays
-  updateMetrics();
-  loadCharts();
-  loadRecentValidations();
-  loadValidationHistory();
-  
-  // Show refresh feedback
-  const refreshBtn = document.querySelector('.btn-primary');
-  const originalText = refreshBtn.innerHTML;
-  
-  refreshBtn.innerHTML = '<i class="fas fa-check"></i> Refreshed';
-  refreshBtn.classList.add('success');
-  
-  setTimeout(() => {
-    refreshBtn.innerHTML = originalText;
-    refreshBtn.classList.remove('success');
-  }, 2000);
-}
-
-/**
- * Clear validation history
- */
-function clearHistory() {
-  if (confirm('Are you sure you want to clear all validation history? This action cannot be undone.')) {
-    dashboardData.recentValidations = [];
-    dashboardData.validationHistory = [];
-    
-    // Save to localStorage
-    localStorage.setItem('bimcheck_dashboard_data', JSON.stringify(dashboardData));
-    
-    // Update displays
-    loadRecentValidations();
-    loadValidationHistory();
-    
-    console.log('Validation history cleared');
-  }
-}
-
-/**
- * Export dashboard data
- */
-function exportDashboardData() {
-  try {
-    const dataStr = JSON.stringify(dashboardData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(dataBlob);
-    link.download = `bimcheck_dashboard_${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
-    
-    console.log('Dashboard data exported');
-  } catch (error) {
-    console.error('Error exporting dashboard data:', error);
-    alert('Error exporting dashboard data. Please try again.');
-  }
-}
-
-/**
- * Update analysis section
- */
-function updateAnalysisSection() {
-  // Update conformity bar
-  const conformityFill = document.getElementById('conformityFill');
-  const conformityText = document.getElementById('conformityText');
-  
-  if (conformityFill && conformityText) {
-    conformityFill.style.width = `${dashboardData.conformityRate}%`;
-    conformityText.textContent = `${dashboardData.conformityRate}% Conformity`;
-  }
-  
-  // Update analysis details
-  const stats = getDashboardStats();
-  
-  const totalValidationsEl = document.getElementById('totalValidations');
-  const successfulValidationsEl = document.getElementById('successfulValidations');
-  const avgProcessingTimeEl = document.getElementById('avgProcessingTime');
-  const mostCommonIssueEl = document.getElementById('mostCommonIssue');
-  
-  if (totalValidationsEl) totalValidationsEl.textContent = stats.totalValidations;
-  if (successfulValidationsEl) successfulValidationsEl.textContent = stats.successfulValidations;
-  if (avgProcessingTimeEl) avgProcessingTimeEl.textContent = `${dashboardData.processingTime}s`;
-  
-  // Find most common issue
-  const issues = dashboardData.problemsByCategory;
-  const mostCommonIssue = Object.keys(issues).reduce((a, b) => issues[a] > issues[b] ? a : b);
-  if (mostCommonIssueEl) mostCommonIssueEl.textContent = mostCommonIssue;
-}
-
-/**
- * Filter analysis data
- */
-function filterAnalysis() {
-  const filter = document.getElementById('conformityFilter').value;
-  console.log('Filtering analysis by:', filter);
-  
-  // Here you can implement different filtering logic based on the selected filter
-  // For now, we'll just update the display
-  updateAnalysisSection();
-}
-
-/**
- * Get dashboard statistics
- */
-function getDashboardStats() {
-  const totalValidations = dashboardData.recentValidations.length;
-  const successfulValidations = dashboardData.recentValidations.filter(v => v.status === 'success').length;
-  const averageConformity = totalValidations > 0 
-    ? (dashboardData.recentValidations.reduce((sum, v) => sum + (v.elements - v.problems) / v.elements * 100, 0) / totalValidations).toFixed(1)
-    : 0;
-  
-  return {
-    totalValidations,
-    successfulValidations,
-    averageConformity,
-    totalElements: dashboardData.totalElements,
-    totalProblems: dashboardData.totalProblems
-  };
-}
-
-// Export functions for global use
-window.refreshDashboard = refreshDashboard;
-window.clearHistory = clearHistory;
-window.exportDashboardData = exportDashboardData;
-window.toggleChartView = toggleChartView;
-window.toggleElementChartView = toggleElementChartView; 

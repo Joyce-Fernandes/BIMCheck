@@ -9,6 +9,7 @@ const PORT = 3000;
 const mimeTypes = {
     '.html': 'text/html',
     '.js': 'application/javascript',
+    '.mjs': 'application/javascript',
     '.css': 'text/css',
     '.json': 'application/json',
     '.png': 'image/png',
@@ -44,11 +45,11 @@ const server = http.createServer((req, res) => {
         filePath = path.join(__dirname, 'docs', 'index.html');
     } else if (pathname.startsWith('/src/')) {
         // Remove o /src/ do início para acessar os arquivos
-        filePath = path.join(__dirname, pathname);
+        filePath = path.join(__dirname, 'src', pathname);
     } else if (pathname === '/dashboard') {
         filePath = path.join(__dirname, 'src', 'dashboard.html');
     } else {
-        filePath = path.join(__dirname, pathname);
+        filePath = path.join(__dirname, 'src', pathname);
     }
     
     // Verifica se o arquivo existe

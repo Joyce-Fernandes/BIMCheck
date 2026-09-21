@@ -20,7 +20,13 @@
     "lint:fix": "eslint src/**/*.js --fix",
     "format": "prettier --write src/**/*.{js,css,html}",
     "build": "echo 'Build completed'",
-    "deploy": "echo 'Deploy completed'"
+    "deploy": "echo 'Deploy completed'",
+    "test:real": "node tests/real-validation.cjs",
+    "test:3d": "node tests/geometry-review.cjs",
+    "test:reviews": "node tests/reviews.cjs",
+    "test:workflow": "node tests/project-workflow.cjs",
+    "test:large": "node tests/large-analysis.cjs",
+    "test:bcf": "node tests/bcf.cjs"
   },
   "keywords": [
     "bim",
@@ -57,7 +63,7 @@
   },
   "dependencies": {
     "three": "^0.137.0",
-    "web-ifc": "^0.0.44",
+    "web-ifc": "0.0.44",
     "xlsx": "^0.18.5"
   },
   "engines": {

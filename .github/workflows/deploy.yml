@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Validate BIMCheck
 
 on:
   push:
@@ -6,28 +6,30 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
-  deploy:
+  validate:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '22'
+        cache: npm
         
     - name: Install dependencies
-      run: npm install
+      run: npm ci --ignore-scripts
       
     - name: Run tests
-      run: npm run test:e2e:all
-      
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      if: github.ref == 'refs/heads/main'
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./src
-        publish_branch: gh-pages 
+      run: |
+        npm run test:real
+        npm run test:3d
+        npm run test:reviews
+        npm run test:workflow
+        npm run test:large
+        npm run test:bcf
