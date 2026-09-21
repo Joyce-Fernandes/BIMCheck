@@ -1,0 +1,9 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Cache-Control: public, max-age=0, must-revalidate
+/*.mjs
+  Content-Type: application/javascript; charset=utf-8
+/vendor/*.wasm
+  Content-Type: application/wasm

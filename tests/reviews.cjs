@@ -1,0 +1,12 @@
+const test=require('node:test'),assert=require('node:assert/strict');
+let api;
+test.before(async()=>{api=await import('../src/reviews.mjs');});
+const storage=()=>{const map=new Map();return {getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v)};};
+const result={analysisId:'a',issues:[{id:2,globalId:'wall-a',element:'Wall',description:'Missing material',recommendation:'Review'}]};
+const issue=result.issues[0];
+test('saves note, status and timestamp without changing validation',()=>{const db=storage();const before=JSON.stringify(result);const note=api.saveReview(result,issue,{status:'Resolved',text:'Checked the wall parts.'},db);assert.equal(api.readReview(result,issue,db).status,'Resolved');assert.equal(api.readReview(result,issue,db).text,'Checked the wall parts.');assert(Number.isFinite(Date.parse(note.updatedAt)));assert.equal(JSON.stringify(result),before);});
+test('isolates analysis, Express ID and Global ID',()=>{const db=storage();api.saveReview(result,issue,{status:'In review',text:'Only wall a'},db);for(const [r,i] of [[{analysisId:'b'},issue],[result,{...issue,id:3}],[result,{...issue,globalId:'wall-b'}]])assert.equal(api.readReview(r,i,db).text,'');});
+test('exports notes with correct row and latest saved values',()=>{const db=storage();api.saveReview(result,issue,{status:'Open',text:'First'},db);api.saveReview(result,issue,{status:'In review',text:'Latest\nMultiline'},db);const rows=api.reviewRows(result,db);assert.equal(rows[1][0],2);assert.equal(rows[1][5],'In review');assert.equal(rows[1][6],'Latest\nMultiline');});
+test('rejects invalid status and oversize notes',()=>{const db=storage();assert.throws(()=>api.saveReview(result,issue,{status:'Approved',text:''},db));assert.throws(()=>api.saveReview(result,issue,{status:'Open',text:'x'.repeat(5001)},db));});
+test('does not report success when storage fails',()=>{assert.throws(()=>api.saveReview(result,issue,{status:'Open',text:'hello'},{setItem:()=>{throw new Error('quota');}}),/quota/);});
+test('Excel retains text safely, not as formulas',()=>{const XLSX=require('xlsx'),db=storage();api.saveReview(result,issue,{status:'Open',text:'=1+1'},db);const sheet=XLSX.utils.aoa_to_sheet(api.reviewRows(result,db));assert.equal(sheet.G2.t,'s');assert.equal(sheet.G2.f,undefined);assert.equal(sheet.G2.v,'=1+1');});

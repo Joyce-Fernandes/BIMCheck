@@ -233,4 +233,9 @@ docker-compose.override.yml
 .gcloud/
 
 # Azure
-.azure/ 
+.azure/
+# Small IFC fixtures used by the real validator
+!src/examples/*.ifc
+
+# Generated BCF test exports
+tests/bcf-output/
